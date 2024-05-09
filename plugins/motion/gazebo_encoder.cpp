@@ -106,7 +106,7 @@ namespace gazebo {
           enc_.qpps = 0;
 
           alive_ = true;
-          last_update_time_ = this->world->GetSimTime();
+          last_update_time_ = this->world->SimTime();
           c_ppr_ = ppr_ / (2*M_PI); // Conversion Factor
 
           // Make sure the ROS node for Gazebo has already been initialized
@@ -132,13 +132,13 @@ namespace gazebo {
           double angul;
           double radius = this->wheel_diameter_ / 2.0;
 
-          common::Time current_time = this->world->GetSimTime();
+          common::Time current_time = this->world->SimTime();
           double seconds_since_last_update = (current_time - last_update_time_).Double();
 
           if(seconds_since_last_update > update_period_){
                ros::Time current_ros_time = ros::Time::now();
 
-               posi = joint_->GetAngle(0).Radian();
+               posi = joint_->Position(0);
                angul = joint_->GetVelocity(0);
 
                enc_.stamp = current_ros_time;

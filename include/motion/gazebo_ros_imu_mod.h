@@ -81,7 +81,7 @@ namespace gazebo
           std::string bias_topic_;
 
           /// \brief allow specifying constant xyz and rpy offsets
-          math::Pose offset_;
+          gz::math::Pose3d offset_;
 
           /// \brief Sensor models
           SensorModel3 accelModel;
@@ -92,11 +92,11 @@ namespace gazebo
           boost::mutex lock;
 
           /// \brief save current body/physics state
-          math::Quaternion orientation;
-          math::Vector3 velocity;
-          math::Vector3 accel;
-          math::Vector3 rate;
-          math::Vector3 gravity;
+          gz::math::Quaterniond orientation;
+          gz::math::Vector3d velocity;
+          gz::math::Vector3d accel;
+          gz::math::Vector3d rate;
+          gz::math::Vector3d gravity;
 
           /// \brief Gaussian noise generator
           double GaussianKernel(double mu,double sigma);

@@ -160,7 +160,7 @@ void SimpleBatteryPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) 
      if(this->update_rate_ > 0.0) this->update_period_ = 1.0 / this->update_rate_;
      else this->update_period_ = 0.0;
 
-     last_update_time_ = cur_time_ = this->world->GetSimTime();
+     last_update_time_ = cur_time_ = this->world->SimTime();
 
      // Make sure the ROS node for Gazebo has already been initialized
      if (!ros::isInitialized()){
@@ -208,7 +208,7 @@ double SimpleBatteryPlugin::OnUpdateVoltage(const common::BatteryPtr &_battery){
 
 void SimpleBatteryPlugin::OnUpdate(){
      update_count_++;
-     double dt = this->world->GetPhysicsEngine()->GetMaxStepSize();
+     double dt = this->world->Physics()->GetMaxStepSize();
      double totalpower = 0.0;
      double k = dt / this->tau;
 
@@ -217,7 +217,7 @@ void SimpleBatteryPlugin::OnUpdate(){
 
      this->q = this->q - GZ_SEC_TO_HOUR(dt * k);
      this->et = this->e0 + this->e1 * (1 - this->q / this->c);
-     this->last_update_time_ = this->world->GetSimTime();
+     this->last_update_time_ = this->world->SimTime();
 
      // ROS_INFO_STREAM(this->et);
      // gzdbg << "Current charge:" << this->q << ", at:" << this->sim_time_now << "\n";

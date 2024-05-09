@@ -3,6 +3,7 @@
      <name>gazebo_sensor_collection</name>
      <version>0.0.0</version>
      <maintainer email="huntery.lw.young@gmail.com">Hunter Young</maintainer>
+     <maintainer email="J.C.vanBrakel@student.tudelft.nl">Jasper van Brakel</maintainer>
 
      <description>
           A ROS Package containing a collection of Gazebo sensor URDF models
@@ -25,7 +26,7 @@
      <build_depend>std_srvs</build_depend>
      <build_depend>visualization_msgs</build_depend>
      <build_depend>nav_msgs</build_depend>
-     <build_depend>libgazebo7-dev</build_depend>
+     <build_depend>libgazebo11-dev</build_depend>
      <build_depend>gazebo_plugins</build_depend>
      <build_depend>gazebo_dev</build_depend>
      <build_depend>gazebo_msgs</build_depend>
@@ -52,7 +53,7 @@
      <run_depend>std_msgs</run_depend>
      <run_depend>std_srvs</run_depend>
      <run_depend>nav_msgs</run_depend>
-     <run_depend>gazebo7</run_depend>
+     <run_depend>gazebo</run_depend>
      <run_depend>gazebo_ros</run_depend>
      <run_depend>gazebo_plugins</run_depend>
      <run_depend>gazebo_dev</run_depend>

@@ -441,18 +441,18 @@ void GazeboRosGpsWithGeofencing::dynamicReconfigureCallback(GazeboRosGpsWithGeof
 void GazeboRosGpsWithGeofencing::Update()
 {
 	int i;
-	common::Time sim_time = world->GetSimTime();
+	common::Time sim_time = world->SimTime();
 	double dt = updateTimer.getTimeSinceLastUpdate().Double();
 
 	PeriodicNoiseBox* box = nullptr;
 
 
-	math::Pose pose = link->GetWorldPose();
+	gz::math::Pose3d pose = link->WorldPose();
 
 	for(i=0;i<this->noiseBoxes.size();i++){
 		box = this->noiseBoxes[i];
-		if(box->contains((float)pose.pos.x, (float)pose.pos.y, (float)pose.pos.z)){
-			ROS_QUICK_INFO("Contained in noise box " << i << "...( p=[" <<  pose.pos.x << " , " << pose.pos.y << "] )\n");
+		if(box->contains((float)pose.Pos().X(), (float)pose.Pos().Y(), (float)pose.Pos().Z())){
+			ROS_QUICK_INFO("Contained in noise box " << i << "...( p=[" <<  pose.Pos().X() << " , " << pose.Pos().Y() << "] )\n");
 
 			ROS_QUICK_INFO("GPS noise box for plot: " << i \
 					<< " \n [x, y, z], [width, length, height], rotation, [noise-mean, noise-variance] ...\n" \
@@ -466,13 +466,13 @@ void GazeboRosGpsWithGeofencing::Update()
 		box = nullptr;
 	}
 	if(box){
-		position_error_model_.gaussian_noise.x *= sqrt(box->dynamic_parameters.noise_variance);
-		position_error_model_.gaussian_noise.y *= sqrt(box->dynamic_parameters.noise_variance);
-		position_error_model_.gaussian_noise.z *= sqrt(box->dynamic_parameters.noise_variance);
+		position_error_model_.gaussian_noise.X() *= sqrt(box->dynamic_parameters.noise_variance);
+		position_error_model_.gaussian_noise.Y() *= sqrt(box->dynamic_parameters.noise_variance);
+		position_error_model_.gaussian_noise.Z() *= sqrt(box->dynamic_parameters.noise_variance);
 	}
 
-	gazebo::math::Vector3 velocity = velocity_error_model_(link->GetWorldLinearVel(), dt);
-	gazebo::math::Vector3 position = position_error_model_(pose.pos, dt);
+	gz::math::Vector3d velocity = velocity_error_model_(link->WorldLinearVel(), dt);
+	gz::math::Vector3d position = position_error_model_(pose.Pos(), dt);
 
 	// An offset error in the velocity is integrated into the position error for the next timestep.
 	// Note: Usually GNSS receivers have almost no drift in the velocity signal.
@@ -481,18 +481,18 @@ void GazeboRosGpsWithGeofencing::Update()
 	fix_.header.stamp = ros::Time(sim_time.sec, sim_time.nsec);
 	velocity_.header.stamp = fix_.header.stamp;
 
-	fix_.latitude  = reference_latitude_  + ( cos(reference_heading_) * position.x + sin(reference_heading_) * position.y) / radius_north_ * 180.0/M_PI;
-	fix_.longitude = reference_longitude_ - (-sin(reference_heading_) * position.x + cos(reference_heading_) * position.y) / radius_east_  * 180.0/M_PI;
-	fix_.altitude  = reference_altitude_  + position.z;
+	fix_.latitude  = reference_latitude_  + ( cos(reference_heading_) * position.X() + sin(reference_heading_) * position.Y()) / radius_north_ * 180.0/M_PI;
+	fix_.longitude = reference_longitude_ - (-sin(reference_heading_) * position.X() + cos(reference_heading_) * position.Y()) / radius_east_  * 180.0/M_PI;
+	fix_.altitude  = reference_altitude_  + position.Z();
 
-	velocity_.vector.x =  cos(reference_heading_) * velocity.x + sin(reference_heading_) * velocity.y;
-	velocity_.vector.y = -sin(reference_heading_) * velocity.x + cos(reference_heading_) * velocity.y;
-	velocity_.vector.z = velocity.z;
+	velocity_.vector.x =  cos(reference_heading_) * velocity.X() + sin(reference_heading_) * velocity.Y();
+	velocity_.vector.y = -sin(reference_heading_) * velocity.X() + cos(reference_heading_) * velocity.Y();
+	velocity_.vector.z = velocity.Z();
 
 	fix_.position_covariance_type = sensor_msgs::NavSatFix::COVARIANCE_TYPE_DIAGONAL_KNOWN;
-	fix_.position_covariance[0] = position_error_model_.drift.x*position_error_model_.drift.x + position_error_model_.gaussian_noise.x*position_error_model_.gaussian_noise.x;
-	fix_.position_covariance[4] = position_error_model_.drift.y*position_error_model_.drift.y + position_error_model_.gaussian_noise.y*position_error_model_.gaussian_noise.y;
-	fix_.position_covariance[8] = position_error_model_.drift.z*position_error_model_.drift.z + position_error_model_.gaussian_noise.z*position_error_model_.gaussian_noise.z;
+	fix_.position_covariance[0] = position_error_model_.drift.X()*position_error_model_.drift.X() + position_error_model_.gaussian_noise.X()*position_error_model_.gaussian_noise.X();
+	fix_.position_covariance[4] = position_error_model_.drift.Y()*position_error_model_.drift.Y() + position_error_model_.gaussian_noise.Y()*position_error_model_.gaussian_noise.Y();
+	fix_.position_covariance[8] = position_error_model_.drift.Z()*position_error_model_.drift.Z() + position_error_model_.gaussian_noise.Z()*position_error_model_.gaussian_noise.Z();
 
 	gps_m.stamp = ros::Time(sim_time.sec, sim_time.nsec);
 	gps_m.latitude = fix_.latitude;
@@ -518,9 +518,9 @@ void GazeboRosGpsWithGeofencing::Update()
 	data_publisher_.publish(gps_m);
 
 	this->marker_.color.a = 1.0;
-	this->marker_.pose.position.x = position.x;
-	this->marker_.pose.position.y = position.y;
-	this->marker_.pose.position.z = position.z;
+	this->marker_.pose.position.x = position.X();
+	this->marker_.pose.position.y = position.Y();
+	this->marker_.pose.position.z = position.Z();
 	this->marker_.color.r = 1.0;
 	this->marker_.color.g = 1.0;
 	this->marker_.color.b = 0.0;
@@ -533,9 +533,9 @@ void GazeboRosGpsWithGeofencing::Update()
 
 
 	this->pos_marker_.color.a = 1.0;
-	this->pos_marker_.pose.position.x = pose.pos.x;
-	this->pos_marker_.pose.position.y = pose.pos.y;
-	this->pos_marker_.pose.position.z = pose.pos.z;
+	this->pos_marker_.pose.position.x = pose.Pos().X();
+	this->pos_marker_.pose.position.y = pose.Pos().Y();
+	this->pos_marker_.pose.position.z = pose.Pos().Z();
 	this->pos_marker_.color.r = 0.0;
 	this->pos_marker_.color.g = 0.0;
 	this->pos_marker_.color.b = 1.0;

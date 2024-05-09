@@ -23,7 +23,7 @@
                 <!-- args="-d $(find gazebo_sensor_collection)/config/rviz/tsv2_default_config.rviz" /> -->
      </group>
 
-	<node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
+	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
           <param name="publish_frequency" type="double" value="500.0"/>
 		<param name="robot_description" value="robot_description"/>
      </node>

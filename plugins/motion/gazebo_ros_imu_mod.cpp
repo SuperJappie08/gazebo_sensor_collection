@@ -131,34 +131,34 @@ void GazeboRosIMUMod::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   if (_sdf->HasElement("xyzOffset")) {
-    this->offset_.pos = _sdf->Get<math::Vector3>("xyzOffset");
+    this->offset_.Pos() = _sdf->Get<gz::math::Vector3d>("xyzOffset");
   } else {
     ROS_INFO("imu plugin missing <xyzOffset>, defaults to 0s");
-    this->offset_.pos = math::Vector3(0, 0, 0);
+    this->offset_.Pos() = gz::math::Vector3d(0, 0, 0);
   }
 
   if (_sdf->HasElement("rpyOffset")) {
-    this->offset_.rot = _sdf->Get<math::Vector3>("rpyOffset");
+    this->offset_.Rot() = _sdf->Get<gz::math::Quaterniond>("rpyOffset");
   } else {
     ROS_INFO("imu plugin missing <rpyOffset>, defaults to 0s");
-    this->offset_.rot = math::Vector3(0, 0, 0);
+    this->offset_.Rot() = gz::math::Quaterniond(0,0,0);
   }
 
   // fill in constant covariance matrix
-  imuMsg.angular_velocity_covariance[0] = rateModel.gaussian_noise.x*rateModel.gaussian_noise.x;
-  imuMsg.angular_velocity_covariance[4] = rateModel.gaussian_noise.y*rateModel.gaussian_noise.y;
-  imuMsg.angular_velocity_covariance[8] = rateModel.gaussian_noise.z*rateModel.gaussian_noise.z;
-  imuMsg.linear_acceleration_covariance[0] = accelModel.gaussian_noise.x*accelModel.gaussian_noise.x;
-  imuMsg.linear_acceleration_covariance[4] = accelModel.gaussian_noise.y*accelModel.gaussian_noise.y;
-  imuMsg.linear_acceleration_covariance[8] = accelModel.gaussian_noise.z*accelModel.gaussian_noise.z;
+  imuMsg.angular_velocity_covariance[0] = rateModel.gaussian_noise.X()*rateModel.gaussian_noise.X();
+  imuMsg.angular_velocity_covariance[4] = rateModel.gaussian_noise.Y()*rateModel.gaussian_noise.Y();
+  imuMsg.angular_velocity_covariance[8] = rateModel.gaussian_noise.Z()*rateModel.gaussian_noise.Z();
+  imuMsg.linear_acceleration_covariance[0] = accelModel.gaussian_noise.X()*accelModel.gaussian_noise.X();
+  imuMsg.linear_acceleration_covariance[4] = accelModel.gaussian_noise.Y()*accelModel.gaussian_noise.Y();
+  imuMsg.linear_acceleration_covariance[8] = accelModel.gaussian_noise.Z()*accelModel.gaussian_noise.Z();
 
   // // Load in covariance to UDP Packet
-  imu_m.gyro.covariance.x = rateModel.gaussian_noise.x*rateModel.gaussian_noise.x;
-  imu_m.gyro.covariance.y = rateModel.gaussian_noise.y*rateModel.gaussian_noise.y;
-  imu_m.gyro.covariance.z = rateModel.gaussian_noise.z*rateModel.gaussian_noise.z;
-  imu_m.accel.covariance.x = accelModel.gaussian_noise.x*accelModel.gaussian_noise.x;
-  imu_m.accel.covariance.y = accelModel.gaussian_noise.y*accelModel.gaussian_noise.y;
-  imu_m.accel.covariance.z = accelModel.gaussian_noise.z*accelModel.gaussian_noise.z;
+  imu_m.gyro.covariance.x = rateModel.gaussian_noise.X()*rateModel.gaussian_noise.X();
+  imu_m.gyro.covariance.y = rateModel.gaussian_noise.Y()*rateModel.gaussian_noise.Y();
+  imu_m.gyro.covariance.z = rateModel.gaussian_noise.Z()*rateModel.gaussian_noise.Z();
+  imu_m.accel.covariance.x = accelModel.gaussian_noise.X()*accelModel.gaussian_noise.X();
+  imu_m.accel.covariance.y = accelModel.gaussian_noise.Y()*accelModel.gaussian_noise.Y();
+  imu_m.accel.covariance.z = accelModel.gaussian_noise.Z()*accelModel.gaussian_noise.Z();
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -216,7 +216,7 @@ void GazeboRosIMUMod::Reset()
 {
   updateTimer.Reset();
 
-  orientation = math::Quaternion();
+  orientation = gz::math::Quaterniond();
   velocity = 0.0;
   accel = 0.0;
 
@@ -231,21 +231,21 @@ bool GazeboRosIMUMod::ServiceCallback(std_srvs::Empty::Request &req,
                                         std_srvs::Empty::Response &res)
 {
   boost::mutex::scoped_lock scoped_lock(lock);
-  rateModel.reset(math::Vector3(0.0, 0.0, 0.0));
+  rateModel.reset(gz::math::Vector3(0.0, 0.0, 0.0));
   return true;
 }
 
 bool GazeboRosIMUMod::SetAccelBiasCallback(hector_gazebo_plugins::SetBias::Request &req, hector_gazebo_plugins::SetBias::Response &res)
 {
   boost::mutex::scoped_lock scoped_lock(lock);
-  accelModel.reset(math::Vector3(req.bias.x, req.bias.y, req.bias.z));
+  accelModel.reset(gz::math::Vector3(req.bias.x, req.bias.y, req.bias.z));
   return true;
 }
 
 bool GazeboRosIMUMod::SetRateBiasCallback(hector_gazebo_plugins::SetBias::Request &req, hector_gazebo_plugins::SetBias::Response &res)
 {
   boost::mutex::scoped_lock scoped_lock(lock);
-  rateModel.reset(math::Vector3(req.bias.x, req.bias.y, req.bias.z));
+  rateModel.reset(gz::math::Vector3(req.bias.x, req.bias.y, req.bias.z));
   return true;
 }
 
@@ -254,37 +254,37 @@ bool GazeboRosIMUMod::SetRateBiasCallback(hector_gazebo_plugins::SetBias::Reques
 void GazeboRosIMUMod::Update()
 {
   // Get Time Difference dt
-  common::Time cur_time = world->GetSimTime();
+  common::Time cur_time = world->SimTime();
   double dt = updateTimer.getTimeSinceLastUpdate().Double();
   boost::mutex::scoped_lock scoped_lock(lock);
   count++;
 
   // Get Pose/Orientation
-  math::Pose pose = link->GetWorldPose();
-  // math::Vector3 pos = pose.pos + this->offset_.pos;
-  math::Quaternion rot = this->offset_.rot * pose.rot;
+  gz::math::Pose3d pose = link->WorldPose();
+  // math::Vector3 pos = pose.Pos + this->offset_.pos;
+  gz::math::Quaterniond rot = this->offset_.Rot() * pose.Rot();
   rot.Normalize();
 
   // get Gravity
-  gravity = world->GetPhysicsEngine()->GetGravity();
-  double gravity_length = gravity.GetLength();
-  ROS_DEBUG_NAMED("gazebo_ros_imu", "gravity_world = [%g %g %g]", gravity.x, gravity.y, gravity.z);
+  gravity = world->Gravity();
+  double gravity_length = gravity.Length();
+  ROS_DEBUG_NAMED("gazebo_ros_imu", "gravity_world = [%g %g %g]", gravity.X(), gravity.Y(), gravity.Z());
 
   // get Acceleration and Angular Rates
   // the result of GetRelativeLinearAccel() seems to be unreliable (sum of forces added during the current simulation step)?
   //accel = myBody->GetRelativeLinearAccel(); // get acceleration in body frame
-  math::Vector3 temp = link->GetWorldLinearVel(); // get velocity in world frame
+  gz::math::Vector3d temp = link->WorldLinearVel(); // get velocity in world frame
   if (dt > 0.0) accel = rot.RotateVectorReverse((temp - velocity) / dt - gravity);
   velocity = temp;
 
   // calculate angular velocity from delta quaternion
   // note: link->GetRelativeAngularVel() sometimes return nan?
   // rate  = link->GetRelativeAngularVel(); // get angular rate in body frame
-  math::Quaternion delta = this->orientation.GetInverse() * rot;
+  gz::math::Quaterniond delta = this->orientation.Inverse() * rot;
   this->orientation = rot;
   if (dt > 0.0) {
-    rate = this->offset_.rot.GetInverse()
-           * (2.0 * acos(std::max(std::min(delta.w, 1.0), -1.0)) * math::Vector3(delta.x, delta.y, delta.z).Normalize() / dt);
+    rate = this->offset_.Rot().Inverse()
+           * (2.0 * acos(std::max(std::min(delta.W(), 1.0), -1.0)) * gz::math::Vector3d(delta.X(), delta.Y(), delta.Z()).Normalize() / dt);
   }
 
   // update sensor models
@@ -292,21 +292,21 @@ void GazeboRosIMUMod::Update()
   rate  = rateModel(rate, dt);
   yawModel.update(dt);
   ROS_DEBUG_NAMED("gazebo_ros_imu", "Current bias errors: accel = [%g %g %g], rate = [%g %g %g], yaw = %g",
-                 accelModel.getCurrentBias().x, accelModel.getCurrentBias().y, accelModel.getCurrentBias().z,
-                 rateModel.getCurrentBias().x, rateModel.getCurrentBias().y, rateModel.getCurrentBias().z,
+                 accelModel.getCurrentBias().X(), accelModel.getCurrentBias().Y(), accelModel.getCurrentBias().Z(),
+                 rateModel.getCurrentBias().X(), rateModel.getCurrentBias().Y(), rateModel.getCurrentBias().Z(),
                  yawModel.getCurrentBias());
   ROS_DEBUG_NAMED("gazebo_ros_imu", "Scale errors: accel = [%g %g %g], rate = [%g %g %g], yaw = %g",
-                 accelModel.getScaleError().x, accelModel.getScaleError().y, accelModel.getScaleError().z,
-                 rateModel.getScaleError().x, rateModel.getScaleError().y, rateModel.getScaleError().z,
+                 accelModel.getScaleError().X(), accelModel.getScaleError().Y(), accelModel.getScaleError().Z(),
+                 rateModel.getScaleError().X(), rateModel.getScaleError().Y(), rateModel.getScaleError().Z(),
                  yawModel.getScaleError());
 
 
   // apply accelerometer and yaw drift error to orientation (pseudo AHRS)
-  math::Vector3 accelDrift = pose.rot.RotateVector(accelModel.getCurrentBias());
+  gz::math::Vector3d accelDrift = pose.Rot().RotateVector(accelModel.getCurrentBias());
   double yawError = yawModel.getCurrentBias();
-  math::Quaternion orientationError(
-    math::Quaternion(cos(yawError/2), 0.0, 0.0, sin(yawError/2)) *                                         // yaw error
-    math::Quaternion(1.0, 0.5 * accelDrift.y / gravity_length, 0.5 * -accelDrift.x / gravity_length, 0.0)  // roll and pitch error
+  gz::math::Quaterniond orientationError(
+    gz::math::Quaterniond(cos(yawError/2), 0.0, 0.0, sin(yawError/2)) *                                         // yaw error
+    gz::math::Quaterniond(1.0, 0.5 * accelDrift.Y() / gravity_length, 0.5 * -accelDrift.X() / gravity_length, 0.0)  // roll and pitch error
   );
   orientationError.Normalize();
   rot = orientationError * rot;
@@ -317,62 +317,62 @@ void GazeboRosIMUMod::Update()
   imuMsg.header.stamp.nsec = cur_time.nsec;
 
   // orientation quaternion
-  imuMsg.orientation.x = rot.x;
-  imuMsg.orientation.y = rot.y;
-  imuMsg.orientation.z = rot.z;
-  imuMsg.orientation.w = rot.w;
+  imuMsg.orientation.x = rot.X();
+  imuMsg.orientation.y = rot.Y();
+  imuMsg.orientation.z = rot.Z();
+  imuMsg.orientation.w = rot.W();
 
   // pass angular rates
-  imuMsg.angular_velocity.x    = rate.x;
-  imuMsg.angular_velocity.y    = rate.y;
-  imuMsg.angular_velocity.z    = rate.z;
+  imuMsg.angular_velocity.x    = rate.X();
+  imuMsg.angular_velocity.y    = rate.Y();
+  imuMsg.angular_velocity.z    = rate.Z();
 
   // pass accelerations
-  imuMsg.linear_acceleration.x    = accel.x;
-  imuMsg.linear_acceleration.y    = accel.y;
-  imuMsg.linear_acceleration.z    = accel.z;
+  imuMsg.linear_acceleration.x    = accel.X();
+  imuMsg.linear_acceleration.y    = accel.Y();
+  imuMsg.linear_acceleration.z    = accel.Z();
 
   // fill in covariance matrix
   imuMsg.orientation_covariance[8] = yawModel.gaussian_noise*yawModel.gaussian_noise;
   if (gravity_length > 0.0) {
-    imuMsg.orientation_covariance[0] = accelModel.gaussian_noise.x*accelModel.gaussian_noise.x/(gravity_length*gravity_length);
-    imuMsg.orientation_covariance[4] = accelModel.gaussian_noise.y*accelModel.gaussian_noise.y/(gravity_length*gravity_length);
+    imuMsg.orientation_covariance[0] = accelModel.gaussian_noise.X()*accelModel.gaussian_noise.X()/(gravity_length*gravity_length);
+    imuMsg.orientation_covariance[4] = accelModel.gaussian_noise.Y()*accelModel.gaussian_noise.Y()/(gravity_length*gravity_length);
   } else {
     imuMsg.orientation_covariance[0] = -1;
     imuMsg.orientation_covariance[4] = -1;
   }
 
   // Load UDP packet with data
-  imu_m.accel.x = accel.x;
-  imu_m.accel.y = accel.y;
-  imu_m.accel.z = accel.z;
+  imu_m.accel.x = accel.X();
+  imu_m.accel.y = accel.Y();
+  imu_m.accel.z = accel.Z();
 
-  imu_m.gyro.x = rate.x;
-  imu_m.gyro.y = rate.y;
-  imu_m.gyro.z = rate.z;
+  imu_m.gyro.x = rate.X();
+  imu_m.gyro.y = rate.Y();
+  imu_m.gyro.z = rate.Z();
 
-  imu_m.orientation.x = rot.x;
-  imu_m.orientation.y = rot.y;
-  imu_m.orientation.z = rot.z;
-  imu_m.orientation.w = rot.w;
+  imu_m.orientation.x = rot.X();
+  imu_m.orientation.y = rot.Y();
+  imu_m.orientation.z = rot.Z();
+  imu_m.orientation.w = rot.W();
 
   imu_m.orientation.covariance.roll = imuMsg.orientation_covariance[0];
   imu_m.orientation.covariance.pitch = imuMsg.orientation_covariance[4];
   imu_m.orientation.covariance.yaw = yawModel.gaussian_noise*yawModel.gaussian_noise;
 
   // Load UDP packet with data
-  imu_m.accel.bias.x = accelModel.getCurrentBias().x;
-  imu_m.accel.bias.y = accelModel.getCurrentBias().y;
-  imu_m.accel.bias.z = accelModel.getCurrentBias().z;
+  imu_m.accel.bias.x = accelModel.getCurrentBias().X();
+  imu_m.accel.bias.y = accelModel.getCurrentBias().Y();
+  imu_m.accel.bias.z = accelModel.getCurrentBias().Z();
 
-  imu_m.gyro.bias.x = rateModel.getCurrentBias().x;
-  imu_m.gyro.bias.y = rateModel.getCurrentBias().y;
-  imu_m.gyro.bias.z = rateModel.getCurrentBias().z;
+  imu_m.gyro.bias.x = rateModel.getCurrentBias().X();
+  imu_m.gyro.bias.y = rateModel.getCurrentBias().Y();
+  imu_m.gyro.bias.z = rateModel.getCurrentBias().Z();
 
-  imu_m.orientation.bias.x = orientationError.x;
-  imu_m.orientation.bias.y = orientationError.y;
-  imu_m.orientation.bias.z = orientationError.z;
-  imu_m.orientation.bias.w = orientationError.w;
+  imu_m.orientation.bias.x = orientationError.X();
+  imu_m.orientation.bias.y = orientationError.Y();
+  imu_m.orientation.bias.z = orientationError.Z();
+  imu_m.orientation.bias.w = orientationError.W();
 
   // publish to ros
   pub_.publish(imuMsg);
@@ -381,16 +381,16 @@ void GazeboRosIMUMod::Update()
   // publish bias
   if (bias_pub_) {
     biasMsg.header = imuMsg.header;
-    biasMsg.orientation.x = orientationError.x;
-    biasMsg.orientation.y = orientationError.y;
-    biasMsg.orientation.z = orientationError.z;
-    biasMsg.orientation.w = orientationError.w;
-    biasMsg.angular_velocity.x = rateModel.getCurrentBias().x;
-    biasMsg.angular_velocity.y = rateModel.getCurrentBias().y;
-    biasMsg.angular_velocity.z = rateModel.getCurrentBias().z;
-    biasMsg.linear_acceleration.x = accelModel.getCurrentBias().x;
-    biasMsg.linear_acceleration.y = accelModel.getCurrentBias().y;
-    biasMsg.linear_acceleration.z = accelModel.getCurrentBias().z;
+    biasMsg.orientation.x = orientationError.X();
+    biasMsg.orientation.y = orientationError.Y();
+    biasMsg.orientation.z = orientationError.Z();
+    biasMsg.orientation.w = orientationError.W();
+    biasMsg.angular_velocity.x = rateModel.getCurrentBias().X();
+    biasMsg.angular_velocity.y = rateModel.getCurrentBias().Y();
+    biasMsg.angular_velocity.z = rateModel.getCurrentBias().Z();
+    biasMsg.linear_acceleration.x = accelModel.getCurrentBias().X();
+    biasMsg.linear_acceleration.y = accelModel.getCurrentBias().Y();
+    biasMsg.linear_acceleration.z = accelModel.getCurrentBias().Z();
     bias_pub_.publish(biasMsg);
   }
 

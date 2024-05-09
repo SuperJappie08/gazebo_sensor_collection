@@ -93,10 +93,6 @@
 #include <gazebo/plugins/DepthCameraPlugin.hh>
 #include <gazebo/plugins/RayPlugin.hh>
 #include <gazebo/plugins/GpuRayPlugin.hh>
-#include <gazebo/math/Vector3.hh>
-#include <gazebo/math/Angle.hh>
-#include <gazebo/math/Pose.hh>
-#include <gazebo/math/Rand.hh>
 #include <gazebo/rendering/Camera.hh>
 #include <gazebo/rendering/Distortion.hh>
 #include <gazebo/rendering/RenderTypes.hh>
@@ -106,8 +102,14 @@
 #include <gazebo/rendering/GpuLaser.hh>
 #include <gazebo/gazebo_config.h>
 
+#include <ignition/math/Vector3.hh>
+#include <ignition/math/Angle.hh>
+#include <ignition/math/Pose3.hh>
+#include <ignition/math/Rand.hh>
+
 #include <sdf/sdf.hh>
 #include <sdf/Param.hh>
+
 
 /** SECTION:
      System Includes

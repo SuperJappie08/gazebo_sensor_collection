@@ -29,6 +29,10 @@
           <origin xyz="0.26 0 0.05" rpy="0 0 0" />
      </xacro:sensor_realsense_d415>
 
+     <xacro:sensor_orbbec_astra name="astra" parent="world_link" color="black">
+      <origin xyz="0.23 0 0.15" rpy="0 0 0" />
+     </xacro:sensor_orbbec_astra>
+
      <!-- IMU -->
      <xacro:sensor_modified_imu name="imu" parent="world_link" color="red"
                     update_rate="50.0"

@@ -245,7 +245,7 @@ namespace gazebo {
     } else {
       this->update_period_ = 0.0;
     }
-    last_update_time_ = this->world->GetSimTime();
+    last_update_time_ = this->world->SimTime();
 
     // Initialize velocity stuff
     wheel_speed_[RIGHT_FRONT] = 0;
@@ -368,7 +368,7 @@ namespace gazebo {
 
   // Update the controller
   void GazeboSkidSteerDriveWEncoder::UpdateChild() {
-    common::Time current_time = this->world->GetSimTime();
+    common::Time current_time = this->world->SimTime();
     double posi[4];
     double angul[4];
 
@@ -378,10 +378,10 @@ namespace gazebo {
     if (seconds_since_last_update > update_period_){
       ros::Time current_ros_time = ros::Time::now();
 
-      posi[0] = joints[RIGHT_FRONT]->GetAngle(0).Radian();
-      posi[1] = joints[LEFT_FRONT]->GetAngle(0).Radian();
-      posi[2] = joints[RIGHT_REAR]->GetAngle(0).Radian();
-      posi[3] = joints[LEFT_REAR]->GetAngle(0).Radian();
+      posi[0] = joints[RIGHT_FRONT]->Position(0);
+      posi[1] = joints[LEFT_FRONT]->Position(0);
+      posi[2] = joints[RIGHT_REAR]->Position(0);
+      posi[3] = joints[LEFT_REAR]->Position(0);
 
       angul[0] = joints[RIGHT_FRONT]->GetVelocity(0);
       angul[1] = joints[LEFT_FRONT]->GetVelocity(0);

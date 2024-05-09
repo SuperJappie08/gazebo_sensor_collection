@@ -222,7 +222,7 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
 
      // Setup Transport Node
      this->transportNode = transport::NodePtr(new transport::Node());
-     this->transportNode->Init(this->world->GetName());
+     this->transportNode->Init(this->world->Name());
 
      // Setup Publishers
      std::string rsTopicRoot = "~/" + this->_parent->GetName() + "/rs/stream/";
@@ -275,7 +275,7 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf){
 */
 
 void GazeboRosRealsense::OnNewFrame(const rendering::CameraPtr cam, const transport::PublisherPtr pub){
-     common::Time current_time = this->world->GetSimTime();
+     common::Time current_time = this->world->SimTime();
 
      // identify camera
      std::string camera_id = extractCameraName(cam->Name());
@@ -326,7 +326,7 @@ void GazeboRosRealsense::OnNewFrame(const rendering::CameraPtr cam, const transp
 
 void GazeboRosRealsense::OnNewDepthFrame(){
      // get current time
-     common::Time current_time = this->world->GetSimTime();
+     common::Time current_time = this->world->SimTime();
      // Get Depth Map dimensions
      unsigned int imageSize = this->depthCam->ImageWidth() * this->depthCam->ImageHeight();
      // Instantiate message
@@ -346,7 +346,7 @@ void GazeboRosRealsense::OnNewDepthFrame(){
      }
 
      // Pack realsense scaled depth map
-     msgs::Set(msg.mutable_time(), this->world->GetSimTime());
+     msgs::Set(msg.mutable_time(), this->world->SimTime());
      msg.mutable_image()->set_width(this->depthCam->ImageWidth());
      msg.mutable_image()->set_height(this->depthCam->ImageHeight());
      msg.mutable_image()->set_pixel_format(common::Image::L_INT16);
