@@ -105,7 +105,7 @@
           </link>
 
           <!-- RGBD sensor for simulation, same as Kinect -->
-          <xacro:sensor_orbbec_astra_pro_plus_gazebo rgb_w="${rgb_w}" rgb_h="${rgb_h}"/>
+          <xacro:sensor_orbbec_astra_pro_plus_gazebo/>
           <xacro:color_gazebo parent="${name}_link" color="${color}"/>
 
      </xacro:macro>
@@ -114,7 +114,7 @@
                            Gazebo
      ========================================================= -->
 
-     <xacro:macro name="sensor_orbbec_astra_pro_plus_gazebo" params="name rgb_w:=640 rgb_h:=480">
+     <xacro:macro name="sensor_orbbec_astra_pro_plus_gazebo">
 
           <gazebo reference="${name}_link">
                <sensor type="depth" name="${name}">

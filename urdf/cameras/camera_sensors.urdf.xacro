@@ -27,6 +27,8 @@
 	<xacro:include filename="$(find gazebo_sensor_collection)/urdf/cameras/rgbd/kinectv2.urdf.xacro" />
 	<!-- Orbbec Astra -->
 	<xacro:include filename="$(find gazebo_sensor_collection)/urdf/cameras/rgbd/orbbec_astra.urdf.xacro" />
+	<!-- Orbbec Astra Pro Plus -->
+	<xacro:include filename="$(find gazebo_sensor_collection)/urdf/cameras/rgbd/orbbec_astra_pro_plus.urdf.xacro" />
 	<!-- Fotonic E Series -->
 	<xacro:include filename="$(find gazebo_sensor_collection)/urdf/cameras/rgbd/fotonic_e.urdf.xacro" />
 	<!-- Intel Realsense R200 -->
