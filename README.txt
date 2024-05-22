@@ -53,6 +53,7 @@
      4. Fotonic E-Series           (sensor_fotonic)
      5. OrbBec Astra               (sensor_orbbec_astra)
      6. Intel Realsense R200       (sensor_realsense_r200)
+     5. OrbBec Astra Pro Plus      (sensor_orbbec_astra_pro_plus)
 
 #====================================================
 #                      Miscellaneous
