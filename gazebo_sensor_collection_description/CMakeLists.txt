@@ -4,10 +4,7 @@ project(gazebo_sensor_collection_description)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  urdf
-  xacro
-)
+find_package(catkin REQUIRED COMPONENTS)
 
 ###################################
 ## catkin specific configuration ##
@@ -21,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES gazebo_sensor_collection_description
- CATKIN_DEPENDS urdf xacro
+#  CATKIN_DEPENDS urdf xacro
 #  DEPENDS system_lib
 )
 
